@@ -52,20 +52,20 @@ int main(void) {
 
     while (!WindowShouldClose()) {
         if (IsKeyDown(KEY_LEFT)) {
-            player.angle += TURNSPEED;
-            if (player.angle == 360) {
-                player.angle = 0;
-            }
-        }
-        if (IsKeyDown(KEY_RIGHT)) {
             player.angle -= TURNSPEED;
             if (player.angle == 0) {
                 player.angle = 360;
-            }
+            }         
+        }
+        if (IsKeyDown(KEY_RIGHT)) {
+            player.angle += TURNSPEED;
+            if (player.angle == 360) {
+                player.angle = 0;
+            }        
         }
         if (IsKeyDown(KEY_UP)) {
-            player.x += (SPEED * cosf(player.angle));
-            player.y += (SPEED * sinf(player.angle));
+            player.x += (SPEED * cosf(player.angle * DEG2RAD));
+            player.y += (SPEED * sinf(player.angle * DEG2RAD));
         }
 
         BeginDrawing();
@@ -80,6 +80,8 @@ int main(void) {
         }
 
         DrawCircle(player.x, player.y, player.radius, RAYWHITE);
+
+        DrawLine(player.x, player.y, player.x + (int)(cosf(player.angle * DEG2RAD) * 30), player.y + (int)(sinf(player.angle * DEG2RAD) * 30), RED);
 
         EndDrawing();
     }
