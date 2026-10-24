@@ -5,8 +5,8 @@
 #define SCREENWIDTH 800
 #define SCREENHEIGHT 600
 
-#define TOTALROWS 16
-#define TOTALCOLS 12
+#define TOTALROWS 12
+#define TOTALCOLS 16
 
 #define CELLSIZE 50
 
@@ -20,27 +20,25 @@ typedef struct Player {
     double angle;
 } Player;
 
+double castRay(Player* player, int map[TOTALROWS][TOTALCOLS]);
+
 int main(void) {
     InitWindow(SCREENWIDTH, SCREENHEIGHT, "Raycaster");
     SetTargetFPS(60);
     
     int map[TOTALROWS][TOTALCOLS] = {
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
     };
 
     Player player = {
@@ -51,22 +49,26 @@ int main(void) {
     };
 
     while (!WindowShouldClose()) {
+        double distance = castRay(&player, map);
+        printf("%f\n", distance);
+
         if (IsKeyDown(KEY_LEFT)) {
-            player.angle -= TURNSPEED;
-            if (player.angle == 0) {
-                player.angle = 360;
-            }         
+            player.angle -= TURNSPEED;         
         }
         if (IsKeyDown(KEY_RIGHT)) {
-            player.angle += TURNSPEED;
-            if (player.angle == 360) {
-                player.angle = 0;
-            }        
+            player.angle += TURNSPEED;       
         }
         if (IsKeyDown(KEY_UP)) {
             player.x += (SPEED * cosf(player.angle * DEG2RAD));
             player.y += (SPEED * sinf(player.angle * DEG2RAD));
         }
+
+        if (player.angle < 0) {
+            player.angle += 360;
+        }
+        if (player.angle >= 360) {
+            player.angle -= 360;
+        } 
 
         BeginDrawing();
         ClearBackground(BLACK);
@@ -74,14 +76,14 @@ int main(void) {
         for (int row = 0; row < TOTALROWS; row++) {
             for (int col = 0; col < TOTALCOLS; col++) {
                 if (map[row][col] == 1) { 
-                    DrawRectangle(row * CELLSIZE, col * CELLSIZE, CELLSIZE - 1, CELLSIZE - 1, RAYWHITE);
+                    DrawRectangle(col * CELLSIZE, row * CELLSIZE, CELLSIZE - 1, CELLSIZE - 1, RAYWHITE);
                 }                
             }
         }
 
         DrawCircle(player.x, player.y, player.radius, RAYWHITE);
 
-        DrawLine(player.x, player.y, player.x + (int)(cosf(player.angle * DEG2RAD) * 30), player.y + (int)(sinf(player.angle * DEG2RAD) * 30), RED);
+        DrawLine(player.x, player.y, player.x + (int)(cosf(player.angle * DEG2RAD) * distance), player.y + (int)(sinf(player.angle * DEG2RAD) * distance), RED);
 
         EndDrawing();
     }
@@ -91,3 +93,19 @@ int main(void) {
     return 0;
 }
 
+double castRay(Player* player, int map[TOTALROWS][TOTALCOLS]) {
+    double total_x = player->x;
+    double total_y = player->y;
+
+    while (true) {
+        total_x += (1 * cosf(player->angle * DEG2RAD));
+        total_y += (1 * sinf(player->angle * DEG2RAD));
+
+        if (map[(int)total_y / CELLSIZE][(int)total_x / CELLSIZE] == 1) {
+            double dx = total_x - player->x;
+            double dy = total_y - player->y;
+
+            return sqrt((dx * dx) + (dy * dy));
+        }
+    }
+}
